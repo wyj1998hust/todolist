@@ -1,0 +1,7 @@
+# 忽略构建过程中不需要的文件
+node_modules
+dist
+.env
+.env.*
+.DS_Store
+npm-debug.log
