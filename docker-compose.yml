@@ -1,8 +1,6 @@
 services:
-  # 数据库服务 (本地开发使用 MySQL 代替 TDSQL)
   db:
     image: mysql:8.0
-    container_name: todolist-db
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: todolist_db
@@ -10,39 +8,73 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-    restart: always
+    healthcheck:
+      # Force a TCP check. During first-time initialization MySQL temporarily
+      # accepts connections only through its Unix socket, which must not unblock
+      # services that connect through the Compose network.
+      test: ["CMD-SHELL", "mysqladmin ping --protocol=tcp -h 127.0.0.1 -uroot -prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
-  # 后端 API 服务
-  backend:
+  migration:
     build:
-      context: ./server
-      dockerfile: Dockerfile
-    image: my-todolist-backend:latest
-    container_name: todolist-backend
-    ports:
-      - "5000:5000"
-    environment:
+      context: ./backend
+    image: team-todo-backend:local
+    command: ["--spring.main.web-application-type=none", "--spring.flyway.enabled=true", "--app.migrate-only=true"]
+    environment: &backend_env
       DB_HOST: db
       DB_PORT: 3306
+      DB_NAME: todolist_db
       DB_USER: root
       DB_PASSWORD: rootpassword
-      DB_NAME: todolist_db
+      APP_AUTH_JWT_SECRET: local-development-secret-change-before-production-123456789
+      APP_BOOTSTRAP_ADMIN_USERNAME: admin
+      APP_BOOTSTRAP_ADMIN_DISPLAY_NAME: 管理员
+      APP_BOOTSTRAP_ADMIN_PASSWORD: ChangeMe123!
+      APP_BOOTSTRAP_MEMBER_USERNAMES: member1,member2,member3,member4
+      APP_BOOTSTRAP_MEMBER_PASSWORD: ChangeMe123!
+      APP_BOOTSTRAP_ENABLED: "false"
     depends_on:
-      - db
-    restart: always
+      db:
+        condition: service_healthy
+    restart: "no"
 
-  # 前端 Web 服务
+  backend:
+    image: team-todo-backend:local
+    build:
+      context: ./backend
+    environment:
+      <<: *backend_env
+      SPRING_FLYWAY_ENABLED: "false"
+      APP_BOOTSTRAP_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health/readiness || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile
-    image: my-todolist-frontend:latest
-    container_name: todolist-frontend
+      context: ./frontend
+    image: team-todo-frontend:local
+    environment:
+      API_PROXY_TARGET: http://backend:8080
     ports:
-      - "8081:80"
+      - "8081:8080"
     depends_on:
-      - backend
-    restart: always
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
 volumes:
   db_data:

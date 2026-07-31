@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-frontend
+  namespace: todo-internal
+  labels:
+    app.kubernetes.io/name: todo-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: todo-frontend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: todo-frontend
+    spec:
+      containers:
+        - name: static-server
+          image: swr.example.com/todo/team-todo-frontend:REPLACE_TAG
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: API_PROXY_TARGET
+              value: http://todo-backend:8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-frontend
+  namespace: todo-internal
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: todo-frontend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: todo-migration
+  namespace: todo-internal
+  labels:
+    app.kubernetes.io/name: todo-migration
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: todo-migration
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migration
+          image: swr.example.com/todo/team-todo-backend:REPLACE_TAG
+          imagePullPolicy: IfNotPresent
+          args:
+            - --spring.main.web-application-type=none
+            - --spring.flyway.enabled=true
+            - --app.migrate-only=true
+          envFrom:
+            - configMapRef:
+                name: todo-config
+            - secretRef:
+                name: todo-secrets
+          env:
+            - name: APP_BOOTSTRAP_ENABLED
+              value: "false"

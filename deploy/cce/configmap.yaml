@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-config
+  namespace: todo-internal
+data:
+  DB_HOST: tdsql.internal.example.com
+  DB_PORT: "3306"
+  DB_NAME: todolist_db
+  DB_USER: todo_app
+  DB_SSL: "true"
+  SPRING_FLYWAY_ENABLED: "false"
+  APP_AUTH_COOKIE_NAME: TODO_SESSION
+  APP_AUTH_SESSION_HOURS: "12"
+  APP_AUTH_SECURE_COOKIE: "false"
+  APP_BOOTSTRAP_ENABLED: "true"
+  APP_BOOTSTRAP_ADMIN_USERNAME: admin
+  APP_BOOTSTRAP_ADMIN_DISPLAY_NAME: 管理员
+  APP_BOOTSTRAP_MEMBER_USERNAMES: member1,member2,member3,member4

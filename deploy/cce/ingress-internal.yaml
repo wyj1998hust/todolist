@@ -1,0 +1,28 @@
+# The selected ingress class must be backed by a Huawei CCE internal ELB with no public IP.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: todo-internal
+  namespace: todo-internal
+  annotations:
+    kubernetes.io/ingress.class: internal-nginx
+spec:
+  ingressClassName: internal-nginx
+  rules:
+    - host: todo.intra.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: todo-backend
+                port:
+                  name: http
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: todo-frontend
+                port:
+                  name: http

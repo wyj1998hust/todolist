@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-backend
+  namespace: todo-internal
+  labels:
+    app.kubernetes.io/name: todo-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: todo-backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: todo-backend
+    spec:
+      containers:
+        - name: api
+          image: swr.example.com/todo/team-todo-backend:REPLACE_TAG
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: todo-config
+            - secretRef:
+                name: todo-secrets
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1024Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-backend
+  namespace: todo-internal
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: todo-backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
