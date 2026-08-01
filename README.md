@@ -8,7 +8,7 @@
 frontend/       Vue 3 + Vite + Pinia + Element Plus
 backend/        Java 17 + Spring Boot + Maven + Flyway
 deploy/cce/     CCE 内网部署清单
-src/, server/   旧 React/Express 原型，仅保留作迁移参考
+旧 React/Express 原型已移出当前仓库，不参与构建
 ```
 
 ## 核心能力
