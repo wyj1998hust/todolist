@@ -1,6 +1,7 @@
 package com.example.teamtodo.api;
 
 import com.example.teamtodo.api.dto.LoginRequest;
+import com.example.teamtodo.api.dto.ChangePasswordRequest;
 import com.example.teamtodo.api.dto.UserResponse;
 import com.example.teamtodo.config.AppProperties;
 import com.example.teamtodo.exception.AppException;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
@@ -60,6 +62,19 @@ public class AuthController {
 
   @PostMapping("/logout")
   public void logout(jakarta.servlet.http.HttpServletResponse response) {
+    expireAuthCookie(response);
+  }
+
+  @PostMapping("/change-password")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void changePassword(@Valid @RequestBody ChangePasswordRequest request,
+                             @AuthenticationPrincipal AuthenticatedUser principal,
+                             jakarta.servlet.http.HttpServletResponse response) {
+    authService.changePassword(principal, request);
+    expireAuthCookie(response);
+  }
+
+  private void expireAuthCookie(jakarta.servlet.http.HttpServletResponse response) {
     ResponseCookie cookie = ResponseCookie.from(properties.getAuth().getCookieName(), "")
         .httpOnly(true)
         .secure(properties.getAuth().isSecureCookie())

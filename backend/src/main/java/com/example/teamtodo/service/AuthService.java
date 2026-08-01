@@ -1,6 +1,7 @@
 package com.example.teamtodo.service;
 
 import com.example.teamtodo.api.dto.LoginRequest;
+import com.example.teamtodo.api.dto.ChangePasswordRequest;
 import com.example.teamtodo.domain.UserAccount;
 import com.example.teamtodo.exception.AppException;
 import com.example.teamtodo.repository.UserAccountRepository;
@@ -8,6 +9,7 @@ import com.example.teamtodo.security.AuthenticatedUser;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -26,5 +28,17 @@ public class AuthService {
       throw new AppException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "用户名或密码错误");
     }
     return AuthenticatedUser.from(user);
+  }
+
+  @Transactional
+  public void changePassword(AuthenticatedUser actor, ChangePasswordRequest request) {
+    UserAccount user = userRepository.findById(actor.id())
+        .orElseThrow(() -> new AppException(HttpStatus.UNAUTHORIZED, "UNAUTHENTICATED", "当前用户不存在"));
+    if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+      throw new AppException(HttpStatus.BAD_REQUEST, "INVALID_CURRENT_PASSWORD", "当前密码错误");
+    }
+    user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+    user.incrementSessionVersion();
+    userRepository.saveAndFlush(user);
   }
 }

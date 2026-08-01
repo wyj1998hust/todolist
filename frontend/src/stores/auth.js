@@ -34,5 +34,9 @@ export const useAuthStore = defineStore('auth', {
         this.initialized = true
       }
     },
+    clearLocalSession() {
+      this.user = null
+      this.initialized = true
+    },
   },
 })

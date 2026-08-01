@@ -33,6 +33,7 @@ public class JwtService {
     return Jwts.builder()
         .subject(user.id().toString())
         .claim("username", user.username())
+        .claim("sessionVersion", user.sessionVersion())
         .issuedAt(Date.from(now))
         .expiration(Date.from(expiresAt))
         .signWith(signingKey)
@@ -40,11 +41,21 @@ public class JwtService {
   }
 
   public Optional<Long> verifyAndGetUserId(String token) {
+    return verifyAndGetIdentity(token).map(JwtIdentity::userId);
+  }
+
+  public Optional<JwtIdentity> verifyAndGetIdentity(String token) {
     try {
       Claims claims = Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token).getPayload();
-      return Optional.of(Long.parseLong(claims.getSubject()));
+      Number sessionVersion = claims.get("sessionVersion", Number.class);
+      if (sessionVersion == null) {
+        return Optional.empty();
+      }
+      return Optional.of(new JwtIdentity(Long.parseLong(claims.getSubject()), sessionVersion.longValue()));
     } catch (RuntimeException exception) {
       return Optional.empty();
     }
   }
+
+  public record JwtIdentity(Long userId, long sessionVersion) {}
 }

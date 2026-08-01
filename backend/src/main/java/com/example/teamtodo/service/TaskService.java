@@ -47,6 +47,7 @@ public class TaskService {
   @Transactional
   public TaskResponse create(TaskCreateRequest request, AuthenticatedUser actor) {
     TaskRules.requireValidDateRange(request.startDate(), request.deadline());
+    requireCanAssignOnCreate(request.assigneeId(), actor);
     Task task = new Task();
     task.setTitle(request.title().trim());
     task.setStartDate(request.startDate());
@@ -132,6 +133,12 @@ public class TaskService {
     }
     if (task.getAssignee() == null || !task.getAssignee().getId().equals(actor.id())) {
       throw new AppException(HttpStatus.FORBIDDEN, "TASK_EDIT_FORBIDDEN", "只能编辑自己负责的任务");
+    }
+  }
+
+  private void requireCanAssignOnCreate(Long assigneeId, AuthenticatedUser actor) {
+    if (!actor.isAdmin() && !actor.id().equals(assigneeId)) {
+      throw new AppException(HttpStatus.FORBIDDEN, "TASK_ASSIGNEE_FORBIDDEN", "普通成员只能将新增任务负责人设置为自己");
     }
   }
 }

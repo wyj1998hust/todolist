@@ -29,6 +29,9 @@ public class UserAccount {
   @Column(name = "is_active", nullable = false)
   private boolean active = true;
 
+  @Column(name = "session_version", nullable = false)
+  private long sessionVersion = 0;
+
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
@@ -48,6 +51,8 @@ public class UserAccount {
   public void setRole(UserRole role) { this.role = role; }
   public boolean isActive() { return active; }
   public void setActive(boolean active) { this.active = active; }
+  public long getSessionVersion() { return sessionVersion; }
+  public void incrementSessionVersion() { sessionVersion++; }
   public LocalDateTime getCreatedAt() { return createdAt; }
   public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

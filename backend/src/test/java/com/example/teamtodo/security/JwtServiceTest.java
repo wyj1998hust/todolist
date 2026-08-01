@@ -14,7 +14,7 @@ class JwtServiceTest {
     properties.getAuth().setSessionHours(1);
     JwtService service = new JwtService(properties);
 
-    String token = service.issueToken(new AuthenticatedUser(42L, "member1", "成员 1", UserRole.MEMBER));
+    String token = service.issueToken(new AuthenticatedUser(42L, "member1", "成员 1", UserRole.MEMBER, 3));
 
     assertEquals(42L, service.verifyAndGetUserId(token).orElseThrow());
   }

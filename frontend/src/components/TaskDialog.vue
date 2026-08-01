@@ -18,7 +18,8 @@ const form = reactive(emptyForm())
 function emptyForm() {
   const today = new Date().toISOString().slice(0, 10)
   return {
-    title: '', startDate: today, deadline: today, categoryId: null, assigneeId: null,
+    title: '', startDate: today, deadline: today, categoryId: null,
+    assigneeId: props.currentUser?.role === 'admin' ? null : props.currentUser?.id ?? null,
     progress: 0, status: 'not_started', version: null,
   }
 }
@@ -36,7 +37,7 @@ watch(() => [props.modelValue, props.task], () => {
   } : {})
 }, { immediate: true, deep: true })
 
-const canChangeAssignee = computed(() => !props.task || props.currentUser.role === 'admin')
+const canChangeAssignee = computed(() => props.currentUser.role === 'admin')
 const title = computed(() => props.task ? (props.readOnly ? '任务详情' : '编辑任务') : '新增任务')
 const activeCategories = computed(() => props.categories.filter((category) => category.active))
 const activeUsers = computed(() => props.users.filter((user) => user.active))

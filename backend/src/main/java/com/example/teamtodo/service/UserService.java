@@ -66,6 +66,7 @@ public class UserService {
     }
     if (request.password() != null) {
       user.setPasswordHash(passwordEncoder.encode(request.password()));
+      user.incrementSessionVersion();
     }
     user.setRole(nextRole);
     user.setActive(nextActive);

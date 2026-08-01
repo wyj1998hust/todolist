@@ -30,6 +30,7 @@ export async function api(path, options = {}) {
 
 export const todoApi = {
   login: (body) => api('/auth/login', { method: 'POST', body }),
+  changePassword: (body) => api('/auth/change-password', { method: 'POST', body }),
   me: () => api('/auth/me'),
   logout: () => api('/auth/logout', { method: 'POST' }),
   tasks: (filters = {}) => {

@@ -1,19 +1,27 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Calendar, DataAnalysis, UserFilled, CollectionTag } from '@element-plus/icons-vue'
 import { useAuthStore } from '../stores/auth'
+import ChangePasswordDialog from './ChangePasswordDialog.vue'
 
 const props = defineProps({ title: { type: String, required: true } })
 const auth = useAuthStore()
 const router = useRouter()
 const isAdmin = computed(() => auth.isAdmin)
+const passwordDialogVisible = ref(false)
 
 async function logout() {
   await auth.logout()
   ElMessage.success('已退出登录')
   router.push({ name: 'login' })
+}
+
+function handlePasswordChanged() {
+  auth.clearLocalSession()
+  ElMessage.success('密码已修改，请重新登录')
+  router.replace({ name: 'login' })
 }
 </script>
 
@@ -34,6 +42,7 @@ async function logout() {
           <strong>{{ auth.user?.displayName }}</strong>
           <span>{{ isAdmin ? '管理员' : '成员' }}</span>
         </div>
+        <el-button text type="primary" @click="passwordDialogVisible = true">修改密码</el-button>
         <el-button text type="primary" @click="logout">退出</el-button>
       </div>
     </header>
@@ -47,5 +56,6 @@ async function logout() {
       </div>
       <slot />
     </main>
+    <ChangePasswordDialog v-model="passwordDialogVisible" @changed="handlePasswordChanged" />
   </div>
 </template>

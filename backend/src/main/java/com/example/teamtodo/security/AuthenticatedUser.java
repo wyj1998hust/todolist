@@ -7,9 +7,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 
-public record AuthenticatedUser(Long id, String username, String displayName, UserRole role) {
+public record AuthenticatedUser(Long id, String username, String displayName, UserRole role, long sessionVersion) {
   public static AuthenticatedUser from(UserAccount user) {
-    return new AuthenticatedUser(user.getId(), user.getUsername(), user.getDisplayName(), user.getRole());
+    return new AuthenticatedUser(user.getId(), user.getUsername(), user.getDisplayName(), user.getRole(), user.getSessionVersion());
   }
 
   public boolean isAdmin() {

@@ -33,9 +33,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (SecurityContextHolder.getContext().getAuthentication() == null) {
       String token = extractCookie(request, properties.getAuth().getCookieName());
       if (token != null) {
-        jwtService.verifyAndGetUserId(token)
-            .flatMap(userRepository::findById)
-            .filter(user -> user.isActive())
+        jwtService.verifyAndGetIdentity(token)
+            .flatMap(identity -> userRepository.findById(identity.userId())
+                .filter(user -> user.isActive() && user.getSessionVersion() == identity.sessionVersion()))
             .ifPresent(user -> {
               AuthenticatedUser principal = AuthenticatedUser.from(user);
               UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

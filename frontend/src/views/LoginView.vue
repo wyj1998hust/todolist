@@ -5,11 +5,12 @@ import { ElMessage } from 'element-plus'
 import { Calendar } from '@element-plus/icons-vue'
 import { ApiError } from '../services/api'
 import { useAuthStore } from '../stores/auth'
+import { loadLastLoginUsername, rememberLoginUsername } from '../utils/loginPreferences'
 
 const router = useRouter()
 const auth = useAuthStore()
 const loading = ref(false)
-const form = reactive({ username: 'admin', password: '' })
+const form = reactive({ username: loadLastLoginUsername(), password: '' })
 const formRef = ref(null)
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
@@ -21,7 +22,9 @@ async function login() {
   if (!valid) return
   loading.value = true
   try {
-    await auth.login(form)
+    const username = form.username.trim()
+    await auth.login({ ...form, username })
+    rememberLoginUsername(username)
     ElMessage.success('登录成功')
     router.replace({ name: 'dashboard' })
   } catch (error) {
@@ -36,7 +39,7 @@ async function login() {
   <main class="login-page">
     <section class="login-card">
       <div class="login-brand"><span><Calendar /></span><div><h1>团队任务</h1><p>内部甘特图协作平台</p></div></div>
-      <el-alert title="默认管理员账号为 admin；首次部署后请立即修改初始化密码。" type="info" :closable="false" show-icon />
+      <el-alert title="首次登录成功后请修改密码" type="info" :closable="false" show-icon />
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="login-form" @submit.prevent="login">
         <el-form-item label="用户名" prop="username"><el-input v-model="form.username" autocomplete="username" /></el-form-item>
         <el-form-item label="密码" prop="password"><el-input v-model="form.password" type="password" show-password autocomplete="current-password" @keyup.enter="login" /></el-form-item>
