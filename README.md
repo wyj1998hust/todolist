@@ -75,3 +75,15 @@ CCE 中先执行 `deploy/cce/migration-job.yaml`，确认 Job 完成后再部署
 - `secret.example.yaml` 中的数据库密码、JWT 密钥和初始化密码
 
 如果内部入口启用 HTTPS，设置 `APP_AUTH_SECURE_COOKIE=true`。
+
+## 交付文档
+
+- [项目交付总览](docs/00-项目交付总览.md)
+- [普通用户使用手册](docs/01-普通用户使用手册.md)
+- [管理员使用与权限说明](docs/管理员使用与权限说明.md)
+- [CCE 部署及迭代与 TDSQL 连接说明书](docs/CCE_TDSQL_部署及迭代说明书.md)
+- [测试与验收报告](docs/04-测试与验收报告.md)
+- [运维手册](docs/05-运维手册.md)
+- [数据迁移与备份恢复说明](docs/06-数据迁移与备份恢复说明.md)
+- [版本说明与已知限制](docs/07-版本说明与已知限制.md)
+- [技术交接文档](docs/08-技术交接文档.md)
